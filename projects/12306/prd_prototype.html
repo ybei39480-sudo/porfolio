@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>铁路12306 - 候补优化原型</title>
+<style>
+  :root {
+    --red: #1a7fc1;
+    --red-dark: #146194;
+    --red-light: #e3f0f7;
+    --red-muted: #e3f0f7;
+    --blue: #1a7fc1;
+    --bg: #f2f2f2;
+    --card: #ffffff;
+    --text: #222;
+    --text2: #888;
+    --text3: #bbb;
+    --border: #e5e5e5;
+    --shadow: 0 1px 4px rgba(0,0,0,.08);
+    --radius: 6px;
+    --nav-height: 50px;
+    --tab-height: 40px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #d8d8d8; color: var(--text);
+    max-width: 390px; margin: 20px auto;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .phone {
+    background: var(--bg);
+    box-shadow: 0 6px 30px rgba(0,0,0,.15);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* status bar */
+  .status {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 18px 2px;
+    font-size: 11px; font-weight: 600; color: #111;
+    background: var(--card);
+    letter-spacing: .3px;
+  }
+  .status-left { width: 60px; }
+  .status-center { font-size: 12px; font-weight: 700; }
+  .status-right { width: 60px; text-align: right; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+
+  /* header / nav bar */
+  .nav-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    min-height: 44px;
+  }
+  .nav-bar-left { font-size: 14px; color: var(--red); cursor: pointer; min-width: 50px; }
+  .nav-bar-title { font-size: 17px; font-weight: 500; color: #000; }
+  .nav-bar-right { font-size: 13px; color: var(--red); cursor: pointer; min-width: 50px; text-align: right; }
+
+  /* page tabs */
+  .page-tabs {
+    display: flex; background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 12px;
+  }
+  .page-tab {
+    padding: 10px 14px; font-size: 13px; color: var(--text2);
+    cursor: pointer; position: relative; white-space: nowrap;
+  }
+  .page-tab.active {
+    color: var(--red); font-weight: 500;
+  }
+  .page-tab.active::after {
+    content: ''; position: absolute; bottom: 0; left: 14px; right: 14px;
+    height: 2px; background: var(--red); border-radius: 1px;
+  }
+
+  /* content area */
+  .content { padding: 8px 12px 80px; }
+
+  /* cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+  }
+  .card-warn {
+    background: #fffbe6;
+    border-left: 3px solid #faad14;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #8c6e00;
+  }
+
+  /* order card (候补订单 item) */
+  .order-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 0;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .order-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px 8px;
+  }
+  .order-train { font-size: 17px; font-weight: 600; }
+  .order-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 3px;
+    font-size: 11px; font-weight: 500;
+    background: var(--red-light); color: var(--red);
+    border: 1px solid #b8d4e8;
+  }
+  .order-badge-green { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
+  .order-badge-gray { background: #f5f5f5; color: #999; border-color: #eee; }
+  .order-route {
+    padding: 0 14px;
+    font-size: 13px; color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .order-route-arrow { color: var(--text3); font-size: 11px; }
+  .order-meta {
+    padding: 8px 14px 12px;
+    font-size: 12px; color: var(--text2);
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .order-meta span { white-space: nowrap; }
+  .order-footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fafafa;
+  }
+  .order-status-text { font-size: 12px; color: var(--red); }
+  .order-action {
+    font-size: 12px; color: var(--red); cursor: pointer;
+    padding: 4px 10px; border: 1px solid #b0cce0; border-radius: 3px;
+  }
+
+  /* prediction mini card (embedded in order card) */
+  .pred-mini {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px;
+    background: #f4f8fb;
+    border-top: 1px solid #dce8f0;
+    cursor: pointer;
+  }
+  .pred-mini-l { display: flex; align-items: center; gap: 8px; }
+  .pred-num { font-size: 22px; font-weight: 700; color: #e37400; line-height: 1; }
+  .pred-label { font-size: 11px; color: var(--text2); }
+  .pred-change { font-size: 11px; color: #2e7d32; }
+
+  /* row */
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+  .row + .row { border-top: 1px solid #f0f0f0; }
+  .row-label { font-size: 13px; color: var(--text2); }
+  .row-value { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* 2-col grid cards */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .grid-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    text-align: center;
+  }
+  .grid-card .num { font-size: 20px; font-weight: 700; color: var(--red); line-height: 1.2; }
+  .grid-card .lbl { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .grid-card.green .num { color: #2e7d32; }
+
+  /* buttons */
+  .btn {
+    display: block; width: 100%; padding: 12px;
+    border-radius: 4px; border: none;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    text-align: center;
+  }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:active { background: var(--red-dark); }
+  .btn-white { background: #fff; color: var(--red); border: 1px solid #b0cce0; }
+  .btn-gray { background: #f5f5f5; color: var(--text2); border: 1px solid var(--border); }
+
+  /* bottom nav */
+  .bottom-nav {
+    display: flex; background: var(--card);
+    border-top: 1px solid var(--border);
+    position: fixed; bottom: 0; width: 390px; max-width: 100%;
+    height: var(--nav-height);
+    z-index: 10;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
+    font-size: 10px; color: var(--text2); cursor: pointer;
+    gap: 1px;
+    padding: 2px 0;
+  }
+  .nav-item .nav-icon {
+    font-size: 18px; line-height: 1.2;
+    font-weight: 300;
+  }
+  .nav-item.active { color: var(--red); }
+  .nav-item.active .nav-icon { color: var(--red); }
+
+  /* toggle switch (apple style) */
+  .switch-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .switch-track {
+    width: 44px; height: 24px; border-radius: 12px;
+    background: #ddd; transition: .2s; position: relative;
+  }
+  .switch-track.on { background: #4cd964; }
+  .switch-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    position: absolute; top: 1px; left: 1px; transition: .2s;
+  }
+  .switch-track.on .switch-thumb { left: 21px; }
+
+  /* progress bar */
+  .progress {
+    height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden;
+    margin: 6px 0;
+  }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--red); }
+  .progress-fill.orange { background: #e37400; }
+
+  /* tag chips */
+  .tag {
+    display: inline-block; padding: 3px 10px; border-radius: 3px;
+    font-size: 11px; cursor: pointer;
+  }
+  .tag-red { background: var(--red-light); color: var(--red); border: 1px solid #b8d4e8; }
+  .tag-outline { background: #fff; color: var(--text2); border: 1px solid var(--border); }
+  .tag-green { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+  /* timeline */
+  .tl { padding-left: 14px; border-left: 2px solid var(--border); margin: 6px 0; }
+  .tl-item { padding: 0 0 16px 12px; position: relative; }
+  .tl-item::before {
+    content: ''; position: absolute; left: -19px; top: 5px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+    border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border);
+  }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item:last-child::before { background: #bbb; }
+  .tl-date { font-size: 11px; color: var(--text2); }
+  .tl-text { font-size: 13px; margin-top: 2px; }
+
+  /* screen toggle */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* section label */
+  .section-label {
+    font-size: 12px; color: var(--text2);
+    margin: 12px 0 6px; padding-left: 2px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* opt item (improvement suggestions) */
+  .opt-item { display: flex; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .opt-item:last-child { border-bottom: none; }
+  .opt-info { flex: 1; }
+  .opt-name { font-size: 13px; font-weight: 500; }
+  .opt-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .opt-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .opt-boost { font-size: 13px; color: #2e7d32; font-weight: 600; }
+
+  /* success page */
+  .success-page { text-align: center; padding: 50px 0 30px; }
+  .success-icon {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: #e8f5e9; color: #2e7d32;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+    font-size: 24px;
+  }
+
+  /* checkbox */
+  .ckb { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; cursor: pointer; }
+  .ckb + .ckb { border-top: 1px solid #f0f0f0; }
+  .ckb-box {
+    width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 3px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-top: 1px;
+  }
+  .ckb-box.on { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* line chart bars */
+  .chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; padding: 6px 0; }
+  .chart-bar { flex: 1; border-radius: 2px; background: var(--red-light); min-height: 4px; }
+  .chart-bar.active { background: var(--red); }
+  .chart-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2); }
+
+  /* trend mini bar */
+  .trend { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .trend span { display: block; width: 10px; border-radius: 2px; background: rgba(255,255,255,.3); }
+  .trend span.active { background: rgba(255,255,255,.85); }
+
+  /* queue stat cards */
+  .stat-row { display: flex; gap: 8px; }
+  .stat-card { flex: 1; text-align: center; padding: 10px; border-radius: var(--radius); }
+  .stat-card .stat-num { font-size: 18px; font-weight: 700; line-height: 1.2; }
+  .stat-card .stat-lbl { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* bottom action area */
+  .bottom-action { padding: 12px 0; }
+
+  /* responsive */
+  @media (max-width: 420px) {
+    body { margin: 0; max-width: 100%; }
+    .bottom-nav { width: 100%; }
+  }
+
+  /* helper: red dot */
+  .red-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--red); margin-right: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- status bar -->
+  <div class="status">
+    <div class="status-left">5G</div>
+    <div class="status-center">12:00</div>
+    <div class="status-right">
+      <span>87%</span>
+      <svg width="14" height="12" viewBox="0 0 14 12"><rect x="0" y="2" width="10" height="9" rx="1.5" fill="none" stroke="#222" stroke-width="1.2"/><rect x="11" y="4" width="2.5" height="5" rx=".5" fill="#222"/><rect x="1.5" y="4" width="7" height="5" rx="1" fill="#222" opacity=".9"/></svg>
+    </div>
+  </div>
+
+  <!-- ==================== 首页：候补订单列表 ==================== -->
+  <div class="screen active" id="s-home">
+    <div class="nav-bar">
+      <div class="nav-bar-left"></div>
+      <div class="nav-bar-title">订单</div>
+      <div class="nav-bar-right">管理</div>
+    </div>
+    <div class="page-tabs">
+      <div class="page-tab">未支付</div>
+      <div class="page-tab">已支付</div>
+      <div class="page-tab active">候补订单</div>
+      <div class="page-tab">已失效</div>
+    </div>
+    <div class="content">
+
+      <!-- 候补订单卡片 1 -->
+      <div class="order-card">
+        <div class="order-head">
+          <span class="order-train">G123 次</span>
+          <span class="order-badge">候补中</span>
+        </div>
+        <div class="order-route">
+          <span>北京南</span>
+          <span class="order-route-arrow">→</span>
+          <span>上海虹桥</span>
+        </div>
+        <div class="order-meta">
+          <span>2026-05-20</span>
+          <span>08:00-12:30</span>
+          <span>二等座</span>
+          <span>2张</span>
+        </div>
+        <!-- 候补预测入口 (F1) -->
+        <div class="pred-mini" onclick="showScreen('s-f1')">
+          <div class="pred-mini-l">
+            <span class="pred-num">72%</span>
+            <div>
+              <div class="pred-label">预测成功率</div>
+              <div style="font-size:10px;color:var(--text3);">距发车 3 天</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="pred-change">↑5%</span>
+            <span style="color:var(--text3);font-size:12px;">›</span>
+          </div>
+        </div>
+        <div class="order-footer">
+          <span class="order-status-text">排队前 25%-50% · 218人</span>
+          <span class="order-action" onclick="showScreen('s-f2')">排队详情</span>
+        </div>
+      </div>
+
+      <!-- 候补订单卡片 2 -->
+      <div class="order-card">
+        <div class="order-head">
+          <span class="order-train">G456 次</span>
+          <span class="order-badge" style="background:#f5f5f5;color:#999;border-color:#eee;">待处理</span>
+        </div>
+        <div class="order-route">
+          <span>北京南</span>
+          <span class="order-route-arrow">→</span>
+          <span>南京南</span>
+        </div>
+        <div class="order-meta">
+          <span>2026-05-20</span>
+          <span>14:00-16:30</span>
+          <span>二等座</span>
+          <span>1张</span>
+        </div>
+        <div class="order-footer" style="background:#fff;">
+          <span style="font-size:12px;color:#e37400;">建议切换备选车次</span>
+          <span class="order-action" onclick="showScreen('s-f3')">去处理</span>
+        </div>
+      </div>
+
+      <!-- 快捷入口 -->
+      <div class="grid-2" style="margin-top:2px;">
+        <div class="grid-card" onclick="showScreen('s-f4')">
+          <div class="num">5.18</div>
+          <div class="lbl">截止时间</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">建议决策日</div>
+        </div>
+        <div class="grid-card green" onclick="showScreen('s-f5')">
+          <div class="num">+25%</div>
+          <div class="lbl">可提升成功率</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">查看建议 ›</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F1: 预测详情 ==================== -->
+  <div class="screen" id="s-f1">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">成功率预测</div>
+      <div class="nav-bar-right">刷新</div>
+    </div>
+    <div class="content">
+
+      <div class="card" style="background:var(--red);color:#fff;text-align:center;padding:18px;">
+        <div style="font-size:13px;opacity:.85;">G123 北京南→上海虹桥</div>
+        <div style="font-size:42px;font-weight:700;margin:6px 0;line-height:1;">72%</div>
+        <div style="font-size:12px;opacity:.75;">较昨日 ↑5% · 距发车 3 天</div>
+        <div class="trend" style="justify-content:center;margin-top:8px;">
+          <span style="height:8px;"></span><span style="height:14px;"></span>
+          <span style="height:20px;"></span><span style="height:26px;"></span>
+          <span style="height:32px;"></span><span class="active" style="height:28px;"></span>
+          <span style="height:16px;"></span>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="section-label">历史趋势（近7天）</div>
+        <div class="card" style="padding:10px 14px;">
+          <div class="chart">
+            <div class="chart-bar" style="height:28%;"></div>
+            <div class="chart-bar" style="height:35%;"></div>
+            <div class="chart-bar" style="height:42%;"></div>
+            <div class="chart-bar" style="height:55%;"></div>
+            <div class="chart-bar" style="height:68%;"></div>
+            <div class="chart-bar active" style="height:72%;"></div>
+            <div class="chart-bar" style="height:65%;"></div>
+          </div>
+          <div class="chart-labels">
+            <span>5/14</span>
+            <span>5/15</span>
+            <span>5/16</span>
+            <span>5/17</span>
+            <span>5/18</span>
+            <span>5/19</span>
+            <span>5/20</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">对比数据</div>
+      <div class="card">
+        <div class="row"><span class="row-label">同类车次平均成功率</span><span class="row-value">65%</span></div>
+        <div class="row"><span class="row-label">去年同期兑现率</span><span class="row-value">78%</span></div>
+        <div class="row"><span class="row-label">数据来源</span><span class="row-value" style="font-size:11px;">近30天同类候补数据</span></div>
+      </div>
+
+      <div class="card-warn">
+        距发车48小时以上预测准确率约75%，24小时以内约80%。越临近发车预测越准确。
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F2: 排队进度 ==================== -->
+  <div class="screen" id="s-f2">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">排队进度</div>
+      <div class="nav-bar-right"></div>
+    </div>
+    <div class="content">
+
+      <div class="card" style="text-align:center;padding:16px;">
+        <div style="font-size:13px;color:var(--text2);">你的排队位置</div>
+        <div style="font-size:28px;font-weight:700;margin:6px 0;">前 25%-50%</div>
+        <div class="progress" style="width:80%;margin:0 auto;">
+          <div class="progress-fill orange" style="width:35%;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row"><span class="row-label">预计等待</span><span class="row-value" style="color:#e37400;">2-3 天</span></div>
+        <div class="row"><span class="row-label">当前排队总人数</span><span class="row-value">218 人</span></div>
+      </div>
+
+      <div class="section-label">过去24小时动态</div>
+      <div class="stat-row">
+        <div class="stat-card" style="background:#e8f5e9;">
+          <div class="stat-num" style="color:#2e7d32;">+15</div>
+          <div class="stat-lbl">新加入</div>
+        </div>
+        <div class="stat-card" style="background:var(--red-light);">
+          <div class="stat-num" style="color:var(--red);">+3</div>
+          <div class="stat-lbl">已兑现</div>
+        </div>
+        <div class="stat-card" style="background:#f5f5f5;">
+          <div class="stat-num" style="color:var(--text2);">-</div>
+          <div class="stat-lbl">已过期</div>
+        </div>
+      </div>
+
+      <div class="section-label">关键时间节点</div>
+      <div class="card">
+        <div class="tl">
+          <div class="tl-item">
+            <div class="tl-date">今晚 24:00</div>
+            <div class="tl-text">免费退票截止，预计退票高峰</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">5月18日</div>
+            <div class="tl-text">建议决策截止日</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">5月20日</div>
+            <div class="tl-text">发车日期</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F3: 提交校验 ==================== -->
+  <div class="screen" id="s-f3">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">提交候补</div>
+      <div class="nav-bar-right"></div>
+    </div>
+    <div class="content">
+
+      <div class="card-warn">
+        以下车次当前不可候补，请确认后移除或保留
+      </div>
+
+      <div class="card" style="padding:0 14px;">
+        <div class="ckb" onclick="this.querySelector('.ckb-box').classList.toggle('on')">
+          <div class="ckb-box on">✓</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">G456 北京南-南京南</div>
+            <div style="font-size:12px;color:var(--text2);">5月20日 14:00-16:30 · 二等座</div>
+            <div style="font-size:12px;color:var(--red);margin-top:2px;">推荐替代: G458（有余票）</div>
+          </div>
+        </div>
+        <div class="ckb" onclick="this.querySelector('.ckb-box').classList.toggle('on')">
+          <div class="ckb-box on">✓</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">G789 北京南-上海虹桥</div>
+            <div style="font-size:12px;color:var(--text2);">5月20日 15:10-19:20 · 二等座</div>
+            <div style="font-size:12px;color:var(--red);margin-top:2px;">推荐替代: G123（候补中）</div>
+          </div>
+        </div>
+        <div class="ckb" onclick="this.querySelector('.ckb-box').classList.toggle('on')">
+          <div class="ckb-box"></div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">G789（保留候补）</div>
+            <div style="font-size:12px;color:var(--text2);">系统继续为你排队</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">以下信息将保留</div>
+        <div class="row" style="padding:6px 0;"><span class="row-label">乘车人</span><span class="row-value">李梓昂</span></div>
+        <div class="row" style="padding:6px 0;"><span class="row-label">截止时间</span><span class="row-value">发车前3天</span></div>
+      </div>
+
+      <div class="bottom-action">
+        <button class="btn btn-red" onclick="if(confirm('确认移除选中车次？'))showScreen('s-f3s')">移除选中车次并提交</button>
+        <button class="btn btn-white" style="margin-top:8px;" onclick="showScreen('s-home')">返回修改</button>
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F3-成功 ==================== -->
+  <div class="screen" id="s-f3s">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">提交成功</div>
+      <div class="nav-bar-right"></div>
+    </div>
+    <div class="content">
+      <div class="success-page">
+        <div class="success-icon">✓</div>
+        <div style="font-size:17px;font-weight:600;margin:14px 0 4px;">候补提交成功</div>
+        <div style="font-size:13px;color:var(--text2);">乘车人信息已保留，正在排队中</div>
+      </div>
+      <button class="btn btn-red" onclick="showScreen('s-home')">查看候补详情</button>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F4: 设置 ==================== -->
+  <div class="screen" id="s-f4">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">候补设置</div>
+      <div class="nav-bar-right"></div>
+    </div>
+    <div class="content">
+
+      <div class="section-label">截止时间</div>
+      <div class="card">
+        <div class="row">
+          <span class="row-label">自定义截止时间</span>
+          <div class="switch-wrap" onclick="this.querySelector('.switch-track').classList.toggle('on')">
+            <div class="switch-track on"><div class="switch-thumb"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          <span class="tag tag-red">发车前3天</span>
+          <span class="tag tag-outline">发车前2天</span>
+          <span class="tag tag-outline">发车前1天</span>
+        </div>
+      </div>
+
+      <div class="section-label">通知方式</div>
+      <div class="card">
+        <div class="row">
+          <span class="row-label">App 推送</span>
+          <div class="switch-wrap" onclick="this.querySelector('.switch-track').classList.toggle('on')">
+            <div class="switch-track on"><div class="switch-thumb"></div></div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">短信通知</span>
+          <div class="switch-wrap" onclick="this.querySelector('.switch-track').classList.toggle('on')">
+            <div class="switch-track on"><div class="switch-thumb"></div></div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-label">支付宝通知</span>
+          <div class="switch-wrap" onclick="this.querySelector('.switch-track').classList.toggle('on')">
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">决策提醒</div>
+      <div class="card" style="background:#fffbe6;">
+        <div style="font-size:13px;">建议决策截止日</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;">5月18日未兑现，建议购买备选方案</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">距建议日还有 3 天</div>
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+  <!-- ==================== F5: 提升建议 ==================== -->
+  <div class="screen" id="s-f5">
+    <div class="nav-bar">
+      <div class="nav-bar-left" onclick="showScreen('s-home')">‹ 返回</div>
+      <div class="nav-bar-title">提升建议</div>
+      <div class="nav-bar-right"></div>
+    </div>
+    <div class="content">
+
+      <div class="card" style="background:#e8f5e9;text-align:center;padding:14px;">
+        <div style="font-size:12px;color:var(--text2);">综合提升潜力</div>
+        <div style="font-size:36px;font-weight:700;color:#2e7d32;line-height:1.2;">+25%</div>
+        <div style="font-size:11px;color:var(--text2);">全部启用后成功率可达 90% 以上</div>
+      </div>
+
+      <div class="section-label">优化选项</div>
+      <div class="card" style="padding:0 14px;">
+        <div class="opt-item">
+          <div class="opt-info">
+            <div class="opt-name">接受无座</div>
+            <div class="opt-desc">当前未开启</div>
+          </div>
+          <div class="opt-right">
+            <span class="opt-boost">+8%</span>
+            <span class="tag tag-green" style="cursor:pointer;" onclick="this.textContent='已开启';this.style.borderColor='#ccc';this.style.color='#999';">开启</span>
+          </div>
+        </div>
+        <div class="opt-item">
+          <div class="opt-info">
+            <div class="opt-name">多选车次</div>
+            <div class="opt-desc">已选 1 个，最多可选 5 个</div>
+          </div>
+          <div class="opt-right">
+            <span class="opt-boost">+15%</span>
+            <span class="tag tag-red">去添加</span>
+          </div>
+        </div>
+        <div class="opt-item">
+          <div class="opt-info">
+            <div class="opt-name">多买一站</div>
+            <div class="opt-desc">北京南→上海虹桥延长至杭州东（+23元）</div>
+          </div>
+          <div class="opt-right">
+            <span class="opt-boost">+25%</span>
+            <span class="tag tag-red">查看</span>
+          </div>
+        </div>
+        <div class="opt-item" style="border-bottom:none;">
+          <div class="opt-info">
+            <div class="opt-name">接受新增列车</div>
+            <div class="opt-desc">高峰期可能增开临客列车</div>
+          </div>
+          <div class="opt-right">
+            <span class="opt-boost">+5%</span>
+            <span class="tag tag-green" style="cursor:pointer;" onclick="this.textContent='已开启';this.style.borderColor='#ccc';this.style.color='#999';">开启</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#f5f5f5;border-radius:4px;padding:10px 12px;font-size:12px;color:var(--text2);margin-top:8px;">
+        推荐组合：多选车次 + 接受无座 + 多买一站，综合提升约 48%。
+      </div>
+
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">☰</span>出行服务</div>
+      <div class="nav-item active"><span class="nav-icon">☷</span>订单</div>
+      <div class="nav-item"><span class="nav-icon">☆</span>铁路会员</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span>我的</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
