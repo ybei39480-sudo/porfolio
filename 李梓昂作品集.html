@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李梓昂 — AI产品经理实习生</title>
+<style>
+  :root {
+    --ink: #111;
+    --paper: #fff;
+    --fog: #f5f4f1;
+    --muted: #8a8a85;
+    --line: #e5e3de;
+    --blue: #005bcc;
+    --blue-glow: rgba(0,91,204,.08);
+    --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: "SF Mono", "Cascadia Code", "Consolas", monospace;
+    --gap: clamp(24px, 5vw, 64px);
+    --w: min(880px, 100% - 2 * var(--gap));
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: clamp(60px, 12vh, 100px) var(--gap) clamp(48px, 10vh, 80px);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -20%;
+    width: 80%; height: 180%;
+    background: radial-gradient(ellipse at center, rgba(0,91,204,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: var(--w); margin: 0 auto; position: relative; z-index: 1; }
+  .hero-kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .15em;
+    color: rgba(255,255,255,.45); text-transform: uppercase; margin-bottom: 24px;
+  }
+  .hero-name {
+    font-family: var(--serif); font-size: clamp(40px, 8vw, 72px);
+    font-weight: 900; letter-spacing: .02em; line-height: 1.1; margin-bottom: 12px;
+  }
+  .hero-line {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: rgba(255,255,255,.65); font-weight: 400;
+    max-width: 520px; margin-bottom: 8px;
+  }
+  .hero-meta { font-size: 14px; color: rgba(255,255,255,.4); margin-bottom: 36px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: all .2s;
+    border: none; font-family: var(--sans);
+  }
+  .btn-primary { background: var(--paper); color: var(--ink); }
+  .btn-primary:hover { background: #e8e8e8; }
+  .btn-ghost {
+    background: transparent; color: var(--paper);
+    border: 1px solid rgba(255,255,255,.25);
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.05); }
+
+  /* ── SECTIONS ── */
+  .section { padding: var(--gap) var(--gap); }
+  .section-inner { max-width: var(--w); margin: 0 auto; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 32px;
+  }
+
+  /* ── PROJECT CARD ── */
+  .project { margin-bottom: clamp(48px, 8vh, 80px); }
+  .project:last-child { margin-bottom: 0; }
+  .project-head { margin-bottom: 28px; }
+  .project-index {
+    font-family: var(--serif); font-size: 14px; color: var(--muted);
+    font-style: italic; margin-bottom: 4px;
+  }
+  .project-title {
+    font-family: var(--serif); font-size: clamp(24px, 4vw, 30px);
+    font-weight: 800; line-height: 1.25; margin-bottom: 8px;
+  }
+  .project-tag {
+    display: inline-block; font-size: 12px; color: var(--muted);
+    background: var(--fog); padding: 4px 12px; border-radius: 4px;
+    font-family: var(--mono); letter-spacing: .04em;
+  }
+  .project-why {
+    font-size: 16px; color: var(--ink); margin-bottom: 24px;
+    padding-left: 16px; border-left: 3px solid var(--ink);
+    line-height: 1.7;
+  }
+  .project-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .project-grid-item {
+    padding: 20px 24px; border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .project-grid-item:nth-child(2n) { border-right: none; }
+  .project-grid-item:nth-last-child(-n+2) { border-bottom: none; }
+  .grid-number {
+    font-family: var(--serif); font-size: 28px; font-weight: 900;
+    color: var(--blue); line-height: 1; margin-bottom: 6px;
+  }
+  .grid-text { font-size: 13px; color: var(--ink); line-height: 1.65; }
+
+  /* metrics row */
+  .project-metrics {
+    display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 20px;
+    padding: 20px 24px; background: var(--fog); border-radius: 8px;
+  }
+  .metric-value {
+    font-family: var(--serif); font-size: 28px; font-weight: 900;
+    line-height: 1; margin-bottom: 2px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: .04em; }
+
+  /* tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    display: inline-block; padding: 6px 14px;
+    font-size: 12px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 100px;
+    font-family: var(--mono); letter-spacing: .03em;
+    text-decoration: none; transition: all .2s;
+  }
+  .tag:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-glow); }
+
+  /* ── SKILLS ── */
+  .skills { background: var(--fog); }
+  .skill-row {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    color: var(--muted); min-width: 80px; flex-shrink: 0;
+  }
+  .skill-main { font-size: 15px; font-weight: 500; color: var(--ink); }
+  .skill-evidence { font-size: 13px; color: var(--muted); margin-left: auto; text-align: right; flex-shrink: 0; }
+
+  /* ── CTA ── */
+  .cta { background: var(--ink); color: var(--paper); padding: var(--gap) var(--gap); text-align: center; }
+  .cta-inner { max-width: var(--w); margin: 0 auto; }
+  .cta-heading {
+    font-family: var(--serif); font-size: clamp(22px, 4vw, 28px);
+    font-weight: 800; margin-bottom: 8px;
+  }
+  .cta-sub { color: rgba(255,255,255,.55); font-size: 14px; margin-bottom: 24px; }
+  .cta-contact { font-size: 13px; color: rgba(255,255,255,.4); margin-top: 16px; }
+  .cta-contact span { margin: 0 12px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 20px var(--gap); text-align: center;
+    font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: .06em;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .project-grid { grid-template-columns: 1fr; }
+    .project-grid-item { border-right: none; }
+    .project-grid-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--line); }
+    .project-grid-item:last-child { border-bottom: none; }
+    .skill-row { flex-wrap: wrap; }
+    .skill-evidence { margin-left: 0; width: 100%; text-align: left; padding-left: 92px; }
+    .project-metrics { gap: 20px; }
+    .hero-name { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-kicker">Portfolio / 2026</div>
+    <h1 class="hero-name">李梓昂</h1>
+    <p class="hero-line">大二，能做从用户调研到原型交付的全流程。</p>
+    <p class="hero-meta">中国海洋大学（985）· 电子信息工程 · 求职 AI 产品经理实习生</p>
+    <div class="hero-actions">
+      <a href="#work" class="btn btn-primary">查看作品</a>
+      <a href="李梓昂-产品实习生-15990962069.pdf" class="btn btn-ghost" download>下载简历 PDF</a>
+    </div>
+  </div>
+</header>
+
+<!-- PROJECTS -->
+<section class="section" id="work">
+  <div class="section-inner">
+    <div class="section-label">Projects</div>
+
+    <!-- Project 1: 12306 -->
+    <article class="project reveal">
+      <div class="project-head">
+        <div class="project-index">01 / 铁路票务</div>
+        <h2 class="project-title">12306 候补功能交互与逻辑优化</h2>
+        <span class="project-tag">核心负责人 · 2026.01 – 03</span>
+      </div>
+      <p class="project-why">12306 候补流程黑箱化，用户提交后陷入被动等待——看不到排队位置，不知道成功概率，通知时有时无。近四成用户最终无法完成候补提交。</p>
+      <div class="project-grid">
+        <div class="project-grid-item">
+          <div class="grid-number">158</div>
+          <div class="grid-text">条真实用户反馈收集与归因，建立四大类十二子类问题分类框架</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">5</div>
+          <div class="grid-text">大功能模块设计：AI概率预测 / 队列透明 / 一键操作 / 生命周期管理 / 成功建议引擎</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">62→90%</div>
+          <div class="grid-text">候补提交完成率预期提升，从反馈中反推基线并设定可量化目标</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">数小时</div>
+          <div class="grid-text">用 Claude Code 构建可交互原型，方案验证周期从数天压缩到数小时</div>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div><div class="metric-value">62→90%</div><div class="metric-label">提交完成率目标</div></div>
+        <div><div class="metric-value">≥80%</div><div class="metric-label">24h 预测准确率</div></div>
+        <div><div class="metric-value">5模块</div><div class="metric-label">功能设计</div></div>
+      </div>
+      <div class="tags">
+        <a href="projects/12306/PRD_12306_Optimization.md" class="tag">PRD 文档</a>
+        <a href="projects/12306/user_research_12306.md" class="tag">用户研究</a>
+        <a href="projects/12306/data_analysis_12306.md" class="tag">数据分析</a>
+        <a href="projects/12306/competitive_analysis_12306.md" class="tag">竞品分析</a>
+        <a href="projects/12306/ab_test_12306.md" class="tag">A/B 测试</a>
+        <a href="projects/12306/prd_prototype.html" class="tag">可交互原型 ↗</a>
+      </div>
+    </article>
+
+    <!-- Project 2: 闪动校园Pro -->
+    <article class="project reveal">
+      <div class="project-head">
+        <div class="project-index">02 / 校园产品</div>
+        <h2 class="project-title">闪动校园Pro 跑步体验优化</h2>
+        <span class="project-tag">设计负责人（校园自主调研）· 2026.04 – 05</span>
+      </div>
+      <p class="project-why">校园强制跑步 App 的防作弊机制过于粗暴——随机弹窗打断跑步、GPS 漂移直接判作弊。78% 的正常跑步用户曾被误判，弱网环境下这个比例更达到 62%。</p>
+      <div class="project-grid">
+        <div class="project-grid-item">
+          <div class="grid-number">32人+50份</div>
+          <div class="grid-text">深度访谈 + 线上问卷，量化三大痛点——GPS漂移、弹窗频率、弱网容错</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">3套方案</div>
+          <div class="grid-text">异常触发人脸识别 / 加速度计弱网补偿 / 三色状态面板，覆盖 90% 体验问题</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">90%</div>
+          <div class="grid-text">试用者认可率，30+ 同学参与移动端原型验证，核心功能获得一致好评</div>
+        </div>
+        <div class="project-grid-item">
+          <div class="grid-number">0→1</div>
+          <div class="grid-text">从调研到方案到原型全部由自己独立完成，完整的 PM 全流程闭环</div>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div><div class="metric-value">85%</div><div class="metric-label">弹窗干扰覆盖</div></div>
+        <div><div class="metric-value">62→15%</div><div class="metric-label">弱网误判降幅目标</div></div>
+        <div><div class="metric-value">90%+</div><div class="metric-label">试用者认可</div></div>
+      </div>
+      <div class="tags">
+        <a href="projects/闪动校园pro/PRD_闪动校园Pro.md" class="tag">PRD 文档</a>
+        <a href="projects/闪动校园pro/user_research.md" class="tag">用户研究</a>
+        <a href="projects/闪动校园pro/data_analysis.md" class="tag">数据分析</a>
+        <a href="projects/闪动校园pro/competitive_analysis.md" class="tag">竞品分析</a>
+        <a href="projects/闪动校园pro/prototype.html" class="tag">可交互原型 ↗</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section skills">
+  <div class="section-inner">
+    <div class="section-label">What I Bring</div>
+    <div class="skill-row reveal">
+      <span class="skill-label">产品设计</span>
+      <span class="skill-main">能独立写结构完整的 PRD，从用户画像到验收标准</span>
+      <span class="skill-evidence">两个项目均输出完整 PRD</span>
+    </div>
+    <div class="skill-row reveal">
+      <span class="skill-label">数据分析</span>
+      <span class="skill-main">SQL + 结构化思维，从海量反馈中提炼量化指标</span>
+      <span class="skill-evidence">158条反馈归因分析</span>
+    </div>
+    <div class="skill-row reveal">
+      <span class="skill-label">AI 驱动</span>
+      <span class="skill-main">用 Claude Code 把方案直接变成可交互原型</span>
+      <span class="skill-evidence">两个项目原型均由 AI 辅助构建</span>
+    </div>
+    <div class="skill-row reveal">
+      <span class="skill-label">技术理解</span>
+      <span class="skill-main">EE 专业 + C/C++/Python 基础，能判断技术可行性与成本</span>
+      <span class="skill-evidence">降低产品-研发对齐成本</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-inner reveal">
+    <div class="cta-heading">正在找日常实习，随时到岗。</div>
+    <p class="cta-sub">如果你在招一个能直接上手干活的产品实习生，期待聊聊。</p>
+    <a href="李梓昂-产品实习生-15990962069.pdf" class="btn btn-primary" download>下载简历</a>
+    <p class="cta-contact"><span>📞 15990962069</span><span>✉️ 2941988664@qq.com</span></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">李梓昂 · AI产品经理实习生 · 作品集</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

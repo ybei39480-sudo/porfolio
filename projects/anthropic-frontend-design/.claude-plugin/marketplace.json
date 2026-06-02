@@ -1,0 +1,15 @@
+{
+  "name": "frontend-design",
+  "owner": {
+    "name": "Anthropic",
+    "url": "https://github.com/anthropics"
+  },
+  "plugins": [
+    {
+      "name": "frontend-design",
+      "source": "./",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Avoids generic AI aesthetics.",
+      "version": "1.0.0"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\29419\\\\Desktop\\\\cc test\\\\projects\\\\����У԰pro\")",
+      "PowerShell(Start-Process \"c:\\\\Users\\\\29419\\\\Desktop\\\\cc test\\\\projects\\\\����У԰pro\\\\prototype.html\")",
+      "PowerShell(Write-Host \"=== 当前用户启动文件夹 ===\"; Get-ChildItem \"$env:APPDATA\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\" -ErrorAction SilentlyContinue | Select-Object Name | Out-String; Write-Host \"=== 公用启动文件夹 ===\"; Get-ChildItem \"C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\" -ErrorAction SilentlyContinue | Select-Object Name | Out-String)",
+      "PowerShell(Get-ScheduledTask | Where-Object { $_.Triggers -match \"AtStartup|AtLogon\" -and $_.State -ne \"Disabled\" } | Select-Object TaskName, TaskPath, State | Format-Table -AutoSize)",
+      "PowerShell(Rename-Item \"c:\\\\Users\\\\29419\\\\Desktop\\\\cc test\\\\portfolio.html\" -NewName \"index.html\" -Force)",
+      "Read(//c/Users/29419/Desktop/cc test/**)",
+      "WebFetch(domain:ybei39480-sudo.github.io)",
+      "PowerShell(Write-Host \"=== .git ===\"; if \\(Test-Path \"c:\\\\Users\\\\29419\\\\Desktop\\\\cc test\\\\.git\"\\) { Write-Host \".git 存在\"; Get-ChildItem \"c:\\\\Users\\\\29419\\\\Desktop\\\\cc test\\\\.git\" -Depth 0 | Select-Object Name, Mode } else { Write-Host \".git 不存在（本地仓库未创建）\" }; Write-Host \"=== GitHub Desktop 配置的仓库 ===\"; if \\(Test-Path \"$env:APPDATA\\\\GitHub Desktop\"\\) { Write-Host \"GitHub Desktop 数据目录存在\" } else { Write-Host \"未找到 GitHub Desktop 数据\" })"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "skill-creator",
+  "owner": {
+    "name": "somasays",
+    "url": "https://github.com/somasays"
+  },
+  "plugins": [
+    {
+      "name": "skill-creator",
+      "source": "./",
+      "description": "Create Claude Code skills from any documentation. Drop-in skill files that teach Claude architectural patterns, best practices, and production code.",
+      "version": "1.0.0"
+    }
+  ]
+}
